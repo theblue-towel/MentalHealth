@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Activity Tracker Control</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Activity Tracker</h1>
+  <div class="maindiv">  
+  <a href="http://localhost:3000/start" class="button" id="toggle">Start Tracking</a>
+  </div>
+
+  <script>
+    const btn = document.getElementById('toggle');
+    let running = false;
+
+    btn.addEventListener('click', () => {
+      const url = running ? '/stop' : '/start';
+      fetch(url)
+        .then(res => res.text())
+        .then(txt => {
+          console.log(txt);  
+          // Toggle label
+          btn.textContent = running ? 'Start Tracking' : 'Stop Tracking';
+          running = !running;
+        })
+        .catch(err => console.error(err));
+    });
+  </script>
+</body>
+</html>
