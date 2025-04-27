@@ -1,64 +1,98 @@
-/* ==== Base (GitHub-style) ==== */
+/* ==== Base ==== */
 body {
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: #fff;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 100vh;
-  
-    /* Checkered background */
-    background: repeating-linear-gradient(
-      45deg,
-      #000 0,
-      #000 20px,
-      #222 20px,
-      #222 40px
-    );
-    animation: scrollBg 60s linear infinite;
-  }
-  
-  /* Scroll animation */
-  @keyframes scrollBg {
-    from { background-position:   0px   0px; }
-    to   { background-position: 1000px 1000px; }
-  }
-  
-  /* Heading */
-  h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  /* ==== Yellow Button ==== */
-  .button {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #000;
-    background-color: #ffcc00;
-    border: none;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    max-width: 100px;
-    
-  }
-  
-  /* Hover & active states */
-  .button:hover {
-    background-color: #ffdb4d;
-  }
-  .button:active {
-    transform: scale(0.97);
-  }
-  .maindiv {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif;
+  color: #fff;
+  text-align: center;
+  min-height: 100vh;
+  background: repeating-linear-gradient(
+    45deg,
+    #000 0,
+    #000 20px,
+    #222 20px,
+    #222 40px
+  );
+  animation: scrollBg 60s linear infinite;
+  display: flex;
+  flex-direction: column;
+}
 
-    justify-items: center;
-    justify-content: center;
+/* Scroll animation */
+@keyframes scrollBg {
+  from {
+    background-position: 0px 0px;
   }
+  to {
+    background-position: 1000px 1000px;
+  }
+}
+
+/* Centered main content */
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ==== Button Styles ==== */
+.button {
+  display: inline-block;
+  padding: 0.75rem 2rem; /* wider padding */
+  font-size: 1.2rem; /* bigger text */
+  font-weight: 600;
+  color: #000;
+  background-color: #ffcc00;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  min-width: 180px; /* minimum width so text doesn't wrap */
+  text-align: center;
+}
+.button:hover {
+  background-color: #ffdb4d;
+}
+.button:active {
+  transform: scale(0.97);
+}
+
+/* Buttons container */
+.maindiv {
+  display: flex;
+  flex-wrap: wrap; /* allow wrapping if screen too small */
+  gap: 2rem; /* more space between buttons */
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+/* Small Clear Button */
+.small-button {
+  margin: 2rem 0 1rem 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #000;
+  background-color: #ff6666;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.small-button:hover {
+  background-color: #ff8080;
+}
+.small-button:active {
+  transform: scale(0.97);
+}
+
+/* Bottom Clear Button Placement */
+.bottomdiv {
+  display: flex;
+  justify-content: center;
+}

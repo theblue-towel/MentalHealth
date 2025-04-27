@@ -1,33 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Activity Tracker Control</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <h1>Activity Tracker</h1>
-  <div class="maindiv">  
-  <a href="http://localhost:3000/start" class="button" id="toggle">Start Tracking</a>
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Activity Tracker Control</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="main-content">
+      <h1>Activity Tracker</h1>
+      <h3 id="status">Status: Stopped</h3>
 
-  <script>
-    const btn = document.getElementById('toggle');
-    let running = false;
+      <div class="maindiv">
+        <button id="toggleBtn" class="button">Start Tracking</button>
+        <form action="/save" method="get" style="display: inline">
+          <button type="submit" class="button">
+            Generate Report (might take a while)
+          </button>
+        </form>
+      </div>
+    </div>
 
-    btn.addEventListener('click', () => {
-      const url = running ? '/stop' : '/start';
-      fetch(url)
-        .then(res => res.text())
-        .then(txt => {
-          console.log(txt);  
-          // Toggle label
-          btn.textContent = running ? 'Start Tracking' : 'Stop Tracking';
-          running = !running;
-        })
-        .catch(err => console.error(err));
-    });
-  </script>
-</body>
+    <div class="bottomdiv">
+      <button id="clearBtn" class="small-button">Clear Data</button>
+    </div>
+
+    <script>
+      const toggleBtn = document.getElementById("toggleBtn");
+      const statusText = document.getElementById("status");
+      const clearBtn = document.getElementById("clearBtn");
+      let running = false;
+
+      toggleBtn.addEventListener("click", () => {
+        const url = running ? "/stop" : "/start";
+        fetch(url)
+          .then((res) => res.text())
+          .then((txt) => {
+            console.log(txt);
+            toggleBtn.textContent = running
+              ? "Start Tracking"
+              : "Stop Tracking";
+            statusText.textContent = running
+              ? "Status: Stopped"
+              : "Status: Running";
+            running = !running;
+          })
+          .catch((err) => console.error(err));
+      });
+
+      clearBtn.addEventListener("click", () => {
+        if (confirm("Are you sure you want to clear all data?")) {
+          fetch("/clear", { method: "POST" })
+            .then((res) => res.text())
+            .then((txt) => {
+              console.log(txt);
+              alert("Data cleared!");
+            })
+            .catch((err) => {
+              console.error(err);
+              alert("Error clearing data.");
+            });
+        }
+      });
+    </script>
+  </body>
 </html>
