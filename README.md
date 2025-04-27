@@ -1,6 +1,4 @@
-MoodSwing is a program that tracks what websites the user goes to and uses a machine-learning model to 
-detect different emotions and ultimately gives the user a summary of their mood and emotions while 
-visiting each app. 
+MoodSwing detects what emotions the user is feeling and determines which websites harm and benefit the user's mental health.
 
 Made for OcsefHacks 2025.
 
