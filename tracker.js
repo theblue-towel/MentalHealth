@@ -1,51 +1,55 @@
 // server.js
-const express = require('express');
-const activeWin = require('active-win');
-const { createObjectCsvWriter } = require('csv-writer');
-const path = require('path');
+const express = require("express");
+const activeWin = require("active-win");
+const { createObjectCsvWriter } = require("csv-writer");
+const path = require("path");
+const fs = require("fs");
 
 const app = express();
-const port = 3000;
+const PORT = 3000;
 
-// serve static files from ./public
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve your index.html + any static assets under ./public
+app.use(express.static(path.join(__dirname, "public")));
 
-// tracking state
-let records = [];
+// CSV setup
+const csvPath = path.join(__dirname, "activity.csv");
+const fileExists = fs.existsSync(csvPath);
+const csvWriter = createObjectCsvWriter({
+  path: csvPath,
+  header: [
+    { id: "start_time", title: "Start Time" },
+    { id: "end_time", title: "End Time" },
+    { id: "window_title", title: "Window Title" },
+    { id: "app_name", title: "App Name" },
+    { id: "duration_seconds", title: "Duration (seconds)" },
+  ],
+  append: true,
+  alwaysWriteHeaders: !fileExists,
+});
+
 let previousApp = null;
 let previousWindow = null;
 let previousStartTime = null;
 let intervalId = null;
-
-// CSV writer
-const csvWriter = createObjectCsvWriter({
-  path: 'activity_log.csv',
-  header: [
-    { id: 'start_time', title: 'Start Time' },
-    { id: 'end_time', title: 'End Time' },
-    { id: 'window_title', title: 'Window Title' },
-    { id: 'app_name', title: 'App Name' },
-    { id: 'duration_seconds', title: 'Duration (seconds)' }
-  ]
-});
+let warnedNoPerm = false;
 
 async function trackActiveWindow() {
   try {
     const win = await activeWin();
     const now = new Date();
 
-    if (!win) {
-      // screen locked or no window
+    // no window/focused apps (e.g. screen locked)
+    if (!win || !win.owner || !win.title) {
       if (previousApp) {
-        const duration = (now - previousStartTime) / 1000;
-        records.push({
+        const rec = {
           start_time: previousStartTime.toISOString(),
           end_time: now.toISOString(),
-          window_title: previousWindow + ' (locked)',
+          window_title: `${previousWindow} (locked)`,
           app_name: previousApp,
-          duration_seconds: duration.toFixed(2)
-        });
-        console.log(`Logged (locked): ${previousApp} - "${previousWindow}" for ${duration.toFixed(2)}s`);
+          duration_seconds: ((now - previousStartTime) / 1000).toFixed(2),
+        };
+        await csvWriter.writeRecords([rec]);
+        console.log("→ wrote record:", rec);
         previousApp = previousWindow = previousStartTime = null;
       }
       return;
@@ -54,30 +58,43 @@ async function trackActiveWindow() {
     const appName = win.owner.name;
     const windowTitle = win.title;
 
+    // on change of active app or window title
     if (appName !== previousApp || windowTitle !== previousWindow) {
       if (previousApp) {
-        const duration = (now - previousStartTime) / 1000;
-        records.push({
+        const rec = {
           start_time: previousStartTime.toISOString(),
           end_time: now.toISOString(),
           window_title: previousWindow,
           app_name: previousApp,
-          duration_seconds: duration.toFixed(2)
-        });
-        console.log(`Logged: ${previousApp} - "${previousWindow}" for ${duration.toFixed(2)}s`);
+          duration_seconds: ((now - previousStartTime) / 1000).toFixed(2),
+        };
+        await csvWriter.writeRecords([rec]);
+        console.log("→ wrote record:", rec);
       }
       previousApp = appName;
       previousWindow = windowTitle;
       previousStartTime = now;
     }
   } catch (err) {
-    console.error('Error in trackActiveWindow:', err);
+    // handle macOS screen-recording-permission error specially
+    const out = (err.stdout || "").toString();
+    if (
+      !warnedNoPerm &&
+      out.includes("requires the screen recording permission")
+    ) {
+      console.warn(
+        "⚠️ active-win needs Screen Recording permission (System Settings › Privacy & Security › Screen Recording)."
+      );
+      warnedNoPerm = true;
+      return;
+    }
+    console.error("Error in trackActiveWindow:", err);
   }
 }
 
 function startTracking() {
   if (intervalId) return;
-  console.log('Starting tracking');
+  console.log("Starting tracking…");
   intervalId = setInterval(trackActiveWindow, 1000);
 }
 
@@ -85,37 +102,39 @@ function stopTracking() {
   if (!intervalId) return;
   clearInterval(intervalId);
   intervalId = null;
-  console.log('Stopping tracking');
+  console.log("Stopped tracking.");
 }
 
-// API endpoints for button
-app.get('/start', (req, res) => {
+// API endpoints
+app.get("/start", (req, res) => {
   startTracking();
-  res.send('tracking started');
+  res.send("tracking started");
 });
 
-app.get('/stop', (req, res) => {
+app.get("/stop", (req, res) => {
   stopTracking();
-  res.send('tracking stopped');
+  res.send("tracking stopped");
 });
 
-// manual save
-app.get('/save', async (req, res) => {
+// final flush if needed
+app.get("/save", async (req, res) => {
   stopTracking();
   await trackActiveWindow();
-  if (records.length) {
-    await csvWriter.writeRecords(records);
-    res.send('CSV saved');
-  } else {
-    res.send('No records to save');
-  }
+  res.send("one final record flushed to CSV");
 });
 
-// health
-app.get('/', (req, res) => {
-  res.render('public/index.html');
+// serve index
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on http://localhost:${port}`);
+// graceful shutdown on Ctrl-C
+process.on("SIGINT", () => {
+  stopTracking();
+  console.log("\nServer shutting down.");
+  process.exit();
+});
+
+app.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
 });
