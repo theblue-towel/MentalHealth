@@ -3,19 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Activity Tracker Control</title>
+    <title>MoodSwing Control Panel</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="main-content">
-      <h1>Activity Tracker</h1>
-      <h3 id="status">Status: Stopped</h3>
+      <h1>MoodSwing</h1>
+      <h3 id="status">Status: Loaded</h3>
 
       <div class="maindiv">
         <button id="toggleBtn" class="button">Start Tracking</button>
         <form action="/save" method="get" style="display: inline">
           <button type="submit" class="button">
-            Generate Report (might take a while)
+            Generate Report
           </button>
         </form>
       </div>
@@ -39,7 +39,7 @@
             console.log(txt);
             toggleBtn.textContent = running
               ? "Start Tracking"
-              : "Stop Tracking";
+              : "Stop Tracking and Save";
             statusText.textContent = running
               ? "Status: Stopped"
               : "Status: Running";
